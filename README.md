@@ -377,22 +377,6 @@ refuse explicitement avec un message clair.
 
 ## 8. Notes importantes
 
-### Modification du schéma SQL
-
-Le schéma original prévoit `mot_de_passe VARCHAR(30)`. Cela **ne peut pas
-stocker un hash bcrypt** (qui fait 60 caractères). J'ai augmenté la colonne à
-`VARCHAR(255)` dans `schema.sql` :
-
-```sql
-`mot_de_passe` VARCHAR(255) NOT NULL,
-```
-
-Sans ce changement, `password_hash()` produirait un hash tronqué et
-`password_verify()` échouerait **systématiquement** — aucune connexion ne
-serait possible.
-
-J'ai aussi élargi `adresse_mail` à `VARCHAR(60)` car 30 caractères est trop
-court pour beaucoup d'adresses réelles.
 
 ### Sécurité implémentée
 
