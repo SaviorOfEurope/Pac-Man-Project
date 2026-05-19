@@ -407,7 +407,7 @@ court pour beaucoup d'adresses réelles.
 ### Compte de démo
 
 - Pseudo : `demo`
-- Mot de passe : `demo1234`
+- Mot de passe : `demo1234` Marche pas encore problème avec le hashage
 
 À supprimer en production (ligne `INSERT INTO utisateur` à la fin du
 `schema.sql`).
