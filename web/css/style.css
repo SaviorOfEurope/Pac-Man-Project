@@ -1482,6 +1482,12 @@ button, .btn { font-family: 'Press Start 2P', monospace; }
     align-items: start;
     justify-content: center;
 }
+.game-main.solutions-hidden {
+    grid-template-columns: 1fr;
+}
+.game-main.solutions-hidden .game-canvas-wrap {
+    justify-self: center;
+}
 @media (max-width: 980px) {
     .game-main { grid-template-columns: 1fr; }
 }

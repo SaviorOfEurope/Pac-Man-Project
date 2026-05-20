@@ -63,6 +63,7 @@ $levelDataJson = json_encode([
     </div>
     <div class="hud-right">
         <button id="solverBtn" class="nav-btn nav-btn-dark">HINT FROM HERE</button>
+        <button id="toggleSolutionsBtn" class="nav-btn nav-btn-dark">HIDE SOLUTIONS</button>
         <a href="menu.php" class="nav-btn nav-btn-dark">MENU</a>
     </div>
 </header>

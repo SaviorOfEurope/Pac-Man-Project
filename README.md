@@ -307,7 +307,7 @@ comptent pas.
 
 ---
 
-## 7. Le solveur — trois modes
+## 7. Le solveur — deux modes
 
 Le panneau **OPTIMAL PATH** à côté du canvas affiche en permanence la
 **solution optimale du niveau**, en tenant compte des positions et trajectoires
@@ -318,19 +318,14 @@ Le bouton **HINT FROM HERE** dans le HUD recalcule la solution **depuis la
 position actuelle** et surligne la prochaine direction suggérée sur le
 direction-pad (clignotement cyan, 3.5 secondes).
 
-### Trois sources de solution (par ordre de priorité)
+### Deux sources de solution (par ordre de priorité)
 
-1. **Cache serveur** (`niveau.solution_cache` en BDD) — instantané. Les 10
-   niveaux livrés ont leur solution pré-calculée et stockée. L'API
-   `api/get_solution.php?level=X` retourne `{ sequence, safe, cached }`.
-
-2. **Web Worker** (`js/solver-worker.js`) — si pas de cache (niveau créé par
-   l'utilisateur, par exemple), le solveur tourne dans un thread en
-   arrière-plan **sans bloquer l'UI**. Le panneau affiche un compteur de
+1. **Web Worker** (`js/solver-worker.js`) — le solveur tourne dans un thread
+   en arrière-plan **sans bloquer l'UI**. Le panneau affiche un compteur de
    progression (nœuds explorés / temps écoulé). Budget par défaut : **30s
    et 8M nœuds**.
 
-3. **Fallback gems-only** — si le BFS sûr échoue (pas de chemin 100% safe,
+2. **Fallback gems-only** — si le BFS sûr échoue (pas de chemin 100% safe,
    timeout, ou explosion de l'espace), le solveur bascule automatiquement
    sur un BFS qui ignore les fantômes. Le panneau affiche un avertissement
    `⚠ Gems-only — no 100%-safe path exists`.

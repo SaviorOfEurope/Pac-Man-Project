@@ -1384,9 +1384,7 @@ function renderSolutionPanel(panel, result, opts = {}) {
     } else {
         ghostNote = '<span class="sol-note warn">⚠ Gems-only — ghosts ignored</span>';
     }
-    const sourceNote = result.fromCache
-        ? '<span class="sol-source">📦 Pre-computed</span>'
-        : '<span class="sol-source">⚙ Live solver</span>';
+    const sourceNote = '<span class="sol-source">⚙ Live solver</span>';
 
     const items = moves.map((m, i) => {
         const done = i < currentMove;
@@ -1543,7 +1541,16 @@ function getWorker() {
 function solveInWorker(levelText, opts, callbacks) {
     const w = getWorker();
     if (!w) {
-        callbacks.onError && callbacks.onError('Worker unavailable');
+        // Worker unavailable: run solver on main thread asynchronously.
+        setTimeout(() => {
+            try {
+                callbacks.onProgress && callbacks.onProgress({ nodes: 0, elapsedMs: 0 });
+                const localResult = solveLocally(levelText, opts || {});
+                callbacks.onDone && callbacks.onDone(localResult);
+            } catch (err) {
+                callbacks.onError && callbacks.onError(err && err.message ? err.message : 'Local solver failed');
+            }
+        }, 0);
         return null;
     }
     const id = ++_workerJobId;
@@ -1552,49 +1559,39 @@ function solveInWorker(levelText, opts, callbacks) {
     return id;
 }
 
-/** Load the initial optimal path. Tries the server cache first; if absent,
- *  falls back to computing it in the worker. */
-function loadOptimalSolution(game, panel) {
-    const levelId = (window.LEVEL_DATA && window.LEVEL_DATA.id) || null;
-    if (!levelId) {
-        console.warn('[Solver] No level id — computing in worker');
-        computeWithWorker(game, panel);
-        return;
-    }
-
-    console.log('[Solver] Trying server cache for level', levelId);
-    fetch('api/get_solution.php?level=' + levelId, { credentials: 'same-origin' })
-        .then(r => {
-            if (!r.ok) {
-                console.warn('[Solver] HTTP', r.status, '— falling back to worker');
-                throw new Error('HTTP ' + r.status);
-            }
-            return r.json();
-        })
-        .then(data => {
-            console.log('[Solver] Server response:', data);
-            if (data && data.ok && data.cached && data.sequence) {
-                // Server cache hit
-                const moves = data.sequence.split('');
-                const result = {
-                    found: true,
-                    moves,
-                    ghostsConsidered: !!data.safe,
-                    fromCache: true,
-                    reason: null,
-                };
-                game._initialSolution = result;
-                game._solutionFromCurrent = false;
-                renderSolutionPanel(panel, result, { fromCurrent: false, currentMove: 0 });
-            } else {
-                console.log('[Solver] No cache — falling back to worker');
-                computeWithWorker(game, panel);
-            }
-        })
-        .catch(err => {
-            console.error('[Solver] API failed:', err);
-            computeWithWorker(game, panel);
+/** Local fallback solver used when the worker script is not present. */
+function solveLocally(levelText, opts = {}) {
+    const canvas = document.createElement('canvas');
+    const tempGame = new Game(canvas, levelText, { usePowerUps: false });
+    try {
+        const safe = tempGame.solvePath({
+            fromCurrent: false,
+            requireSafe: opts.requireSafe !== false,
+            maxTimeMs: opts.maxTimeMs || 30_000,
+            maxNodes: opts.maxNodes || 8_000_000,
         });
+        if (safe.found) {
+            return { ...safe, fromCache: false };
+        }
+        if (opts.allowFallback) {
+            const fallback = tempGame.solvePath({
+                fromCurrent: false,
+                requireSafe: false,
+                maxTimeMs: Math.max(5_000, Math.floor((opts.maxTimeMs || 30_000) / 2)),
+                maxNodes: Math.max(1_000_000, Math.floor((opts.maxNodes || 8_000_000) / 2)),
+            });
+            return { ...fallback, fallback: true, fromCache: false };
+        }
+        return { ...safe, fromCache: false };
+    } finally {
+        tempGame.destroy();
+    }
+}
+
+/** Load the initial optimal path using live worker solve only. */
+function loadOptimalSolution(game, panel) {
+    console.log('[Solver] Live worker solve');
+    computeWithWorker(game, panel);
 }
 
 function computeWithWorker(game, panel) {
@@ -1746,13 +1743,29 @@ async function boot() {
     });
     window._game = game;
 
-    // 3) Load optimal solution: try server cache first, fall back to Web Worker
+    // 3) Load optimal solution via Web Worker
+    const gameMain = document.querySelector('.game-main');
     const solutionPanel = document.getElementById('solutionPanel');
+    const toggleSolutionsBtn = document.getElementById('toggleSolutionsBtn');
+    let solutionsHidden = false;
+    const applySolutionsVisibility = () => {
+        if (!gameMain || !solutionPanel || !toggleSolutionsBtn) return;
+        gameMain.classList.toggle('solutions-hidden', solutionsHidden);
+        solutionPanel.hidden = solutionsHidden;
+        toggleSolutionsBtn.textContent = solutionsHidden ? 'SHOW SOLUTIONS' : 'HIDE SOLUTIONS';
+    };
+    if (toggleSolutionsBtn) {
+        toggleSolutionsBtn.addEventListener('click', () => {
+            solutionsHidden = !solutionsHidden;
+            applySolutionsVisibility();
+        });
+    }
     if (solutionPanel) {
         solutionPanel.innerHTML = '<h3>OPTIMAL PATH</h3><p class="sol-empty">Loading solution…</p>';
 
         loadOptimalSolution(game, solutionPanel);
     }
+    applySolutionsVisibility();
 
     // 4) Keyboard + buttons
     const keyToDir = {
