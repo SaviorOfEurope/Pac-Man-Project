@@ -187,7 +187,8 @@ const PROFILES = {
 };
 
 let currentDiff = 'medium';
-let lastMap = null;
+let lastMap    = null;
+let lastResult = null;
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -417,8 +418,12 @@ async function generate() {
     const playBtn = document.getElementById('playBtn');
     btn.disabled = true;
     playBtn.disabled = true;
-    lastMap = null;
+    document.getElementById('saveGenBtn').disabled = true;
+    lastMap    = null;
+    lastResult = null;
     document.getElementById('genPreview').innerHTML = '';
+    const saveResultEl = document.getElementById('genSaveResult');
+    if (saveResultEl) { saveResultEl.textContent = ''; saveResultEl.className = 'validation-result'; }
 
     const hideParade = window.SolverBridge.showParade(
         document.getElementById('solverOverlay'),
@@ -452,7 +457,9 @@ async function generate() {
                 ? ', ' + candidate.ghosts + ' ghost(s)' + (result.fallback ? ' ⚠ gems-only' : '')
                 : '';
             setStatus(profile.label + ' — ' + candidate.gemCount + ' gems' + ghostNote + ', ' + moves + ' optimal moves (attempt ' + attempt + ').');
+            lastResult = result;
             playBtn.disabled = false;
+            document.getElementById('saveGenBtn').disabled = false;
             btn.disabled = false;
             return;
         } catch (_) { /* retry */ }
@@ -471,11 +478,65 @@ function play() {
     window.location.href = 'game.php?mode=generated';
 }
 
+// ── Save generated level to My Levels ────────────────────────────────────────
+
+async function saveGenLevel() {
+    if (!lastMap || !lastResult) return;
+
+    const name = prompt('Name for this level:', PROFILES[currentDiff].label + ' Random');
+    if (name === null) return; // cancelled
+
+    const btn = document.getElementById('saveGenBtn');
+    const resultEl = document.getElementById('genSaveResult');
+    btn.disabled = true;
+    btn.textContent = 'SAVING…';
+    if (resultEl) { resultEl.textContent = ''; resultEl.className = 'validation-result'; }
+
+    try {
+        const resp = await fetch('api/save_level.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                csrf_token:    window.CSRF_TOKEN,
+                name:          name.trim() || 'Random Level',
+                map:           lastMap,
+                solution:      lastResult.moves ? lastResult.moves.join('') : '',
+                optimal_moves: lastResult.moves ? lastResult.moves.length : 0,
+                ghost_safe:    !lastResult.fallback,
+            }),
+        });
+        const data = await resp.json();
+
+        if (data.ok) {
+            btn.textContent = 'SAVED ✓';
+            if (resultEl) {
+                resultEl.innerHTML = '✓ Saved as "' + (name || 'Random Level') + '" · <a href="my_levels.php">View My Levels</a>';
+                resultEl.className = 'validation-result ok';
+            }
+        } else {
+            btn.textContent = 'SAVE TO MY LEVELS';
+            btn.disabled = false;
+            if (resultEl) {
+                resultEl.textContent = data.error || 'Save failed.';
+                resultEl.className = 'validation-result err';
+            }
+        }
+    } catch (err) {
+        btn.textContent = 'SAVE TO MY LEVELS';
+        btn.disabled = false;
+        if (resultEl) {
+            resultEl.textContent = 'Network error: ' + err.message;
+            resultEl.className = 'validation-result err';
+        }
+    }
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('generateBtn').addEventListener('click', generate);
     document.getElementById('playBtn').addEventListener('click', play);
+    document.getElementById('saveGenBtn').addEventListener('click', saveGenLevel);
 
     document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -483,8 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             currentDiff = btn.dataset.diff;
             document.getElementById('diffDesc').textContent = PROFILES[currentDiff].desc;
-            lastMap = null;
+            lastMap    = null;
+            lastResult = null;
             document.getElementById('playBtn').disabled = true;
+            document.getElementById('saveGenBtn').disabled = true;
             document.getElementById('genPreview').innerHTML = '';
             setStatus('');
         });

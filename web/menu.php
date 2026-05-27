@@ -101,6 +101,7 @@ $powerUps = powerUpsEnabled();
                 <a class="menu-btn primary" href="play.php">
                     <span class="btn-icon">▶</span> PLAY
                 </a>
+                <a class="menu-btn" href="my_levels.php">MY LEVELS</a>
                 <a class="menu-btn" href="leaderboard.php">LEADERBOARD</a>
                 <a class="menu-btn" href="options.php">OPTIONS</a>
                 <a class="menu-btn" href="bestiaire.php">BESTIARY</a>

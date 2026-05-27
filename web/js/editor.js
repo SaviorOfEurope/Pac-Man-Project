@@ -22,13 +22,18 @@ const els = {
     status: document.getElementById('editorStatus'),
     validation: document.getElementById('validationResult'),
     submitResult: document.getElementById('submitResult'),
+    saveResult: document.getElementById('saveResult'),
     gemCount: document.getElementById('gemCountDisplay'),
     gemTarget: document.getElementById('gemTargetDisplay'),
     ghostCount: document.getElementById('ghostCountDisplay'),
     validateBtn: document.getElementById('validateBtn'),
     playBtn: document.getElementById('playSkipBtn'),
     submitBtn: document.getElementById('submitLevelBtn'),
+    saveBtn: document.getElementById('saveLevelBtn'),
 };
+
+// ID of the level currently being edited (0 = new level)
+let currentLevelId = 0;
 
 function emptyGrid(w, h) {
     const g = [];
@@ -275,6 +280,7 @@ async function validateAndMaybePlay(playAfter) {
             lastValidatedResult = null;
             els.playBtn.disabled   = true;
             if (els.submitBtn) els.submitBtn.disabled = true;
+            if (els.saveBtn)   els.saveBtn.disabled   = true;
             return;
         }
 
@@ -287,6 +293,7 @@ async function validateAndMaybePlay(playAfter) {
         lastValidatedResult = result;
         els.playBtn.disabled   = false;
         if (els.submitBtn) els.submitBtn.disabled = false;
+        if (els.saveBtn)   els.saveBtn.disabled   = false;
 
         if (playAfter) launchPlay();
     } catch (err) {
@@ -343,6 +350,75 @@ async function submitLevel() {
     }
 }
 
+// ── Save to My Levels ─────────────────────────────────────────────────────────
+
+async function saveLevel() {
+    if (!lastValidatedMap || !lastValidatedResult) return;
+
+    const btn = els.saveBtn;
+    const defaultName = window.EDIT_LEVEL?.name || '';
+    const name = prompt('Level name:', defaultName);
+    if (name === null) return; // cancelled
+
+    btn.disabled = true;
+    const origLabel = btn.textContent;
+    btn.textContent = 'SAVING…';
+
+    if (els.saveResult) {
+        els.saveResult.innerHTML = '';
+        els.saveResult.className = 'validation-result';
+    }
+
+    try {
+        const resp = await fetch('api/save_level.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                csrf_token:    window.CSRF_TOKEN,
+                id:            currentLevelId || undefined,
+                name:          name.trim() || 'Sans titre',
+                map:           lastValidatedMap,
+                solution:      lastValidatedResult.moves ? lastValidatedResult.moves.join('') : '',
+                optimal_moves: lastValidatedResult.moves ? lastValidatedResult.moves.length : 0,
+                ghost_safe:    !lastValidatedResult.fallback,
+            }),
+        });
+        const data = await resp.json();
+
+        if (data.ok) {
+            currentLevelId = data.level_id;
+            // Update EDIT_LEVEL so subsequent saves update correctly
+            if (!window.EDIT_LEVEL) window.EDIT_LEVEL = {};
+            window.EDIT_LEVEL.id   = data.level_id;
+            window.EDIT_LEVEL.name = name.trim() || 'Sans titre';
+
+            btn.textContent = data.updated ? 'UPDATED ✓' : 'SAVED ✓';
+            if (els.saveResult) {
+                els.saveResult.innerHTML = `<p class="ok">✓ "${name || 'Sans titre'}" saved to <a href="my_levels.php">My Levels</a>.</p>`;
+                els.saveResult.className = 'validation-result ok';
+            }
+            setTimeout(() => {
+                btn.textContent = 'UPDATE MY LEVEL';
+                btn.disabled = false;
+            }, 2500);
+        } else {
+            if (els.saveResult) {
+                els.saveResult.innerHTML = `<p class="err">${data.error || 'Save failed.'}</p>`;
+                els.saveResult.className = 'validation-result err';
+            }
+            btn.textContent = origLabel;
+            btn.disabled = false;
+        }
+    } catch (err) {
+        if (els.saveResult) {
+            els.saveResult.innerHTML = `<p class="err">Network error: ${err.message}</p>`;
+            els.saveResult.className = 'validation-result err';
+        }
+        btn.textContent = origLabel;
+        btn.disabled = false;
+    }
+}
+
 function exportLevel() {
     const text = getLevelText();
     const name = prompt('Level name (for the file):', 'my-level');
@@ -395,6 +471,14 @@ function init() {
     document.getElementById('exportBtn').addEventListener('click', exportLevel);
     document.getElementById('importBtn').addEventListener('click', importLevel);
     if (els.submitBtn) els.submitBtn.addEventListener('click', submitLevel);
+    if (els.saveBtn)   els.saveBtn.addEventListener('click', saveLevel);
+
+    // ── Load existing level when editor is opened with ?id= ──────────────────
+    if (window.EDIT_LEVEL && window.EDIT_LEVEL.map) {
+        currentLevelId = window.EDIT_LEVEL.id || 0;
+        loadFromText(window.EDIT_LEVEL.map);
+        setStatus('Level loaded — validate to enable saving.');
+    }
 
     document.getElementById('importFile').addEventListener('change', async (e) => {
         const file = e.target.files?.[0];

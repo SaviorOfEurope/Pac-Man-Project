@@ -75,8 +75,8 @@ if ((int)$stmt->fetchColumn() >= 5) {
 
 try {
     $stmt = $pdo->prepare('
-        INSERT INTO niveau (difficulte, score_max, map, solution_cache, solution_safe, auteur_id)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO niveau (difficulte, score_max, map, solution_cache, solution_safe, auteur_id, is_public)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
     ');
     $stmt->execute([
         $difficulte,

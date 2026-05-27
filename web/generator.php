@@ -8,7 +8,7 @@ requireLogin();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Random Mazes — Les fantômes d'Ombrequatre</title>
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body class="generator-body">
 <div class="vignette"></div>
@@ -35,17 +35,22 @@ requireLogin();
     <div class="generator-actions">
         <button type="button" class="menu-btn primary" id="generateBtn">GENERATE A MAZE</button>
         <button type="button" class="menu-btn" id="playBtn" disabled>PLAY THIS LEVEL</button>
+        <button type="button" class="menu-btn" id="saveGenBtn" disabled>SAVE TO MY LEVELS</button>
     </div>
 
     <div id="genPreview" class="gen-preview"></div>
     <div id="genStatus" class="editor-status"></div>
+    <div id="genSaveResult" class="validation-result" style="margin-top:10px"></div>
 </main>
 
 <div id="solverOverlay" class="solver-overlay" hidden></div>
 
-<script src="js/level-utils.js?v=5"></script>
-<script src="js/game.js?v=5"></script>
-<script src="js/solver-bridge.js?v=5"></script>
-<script src="js/generator.js?v=5"></script>
+<script>
+window.CSRF_TOKEN = <?= json_encode(\csrfToken()) ?>;
+</script>
+<script src="js/level-utils.js?v=6"></script>
+<script src="js/game.js?v=6"></script>
+<script src="js/solver-bridge.js?v=6"></script>
+<script src="js/generator.js?v=6"></script>
 </body>
 </html>

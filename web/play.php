@@ -37,6 +37,12 @@ requireLogin();
             <p>Generate a solver-verified random maze on the fly and play it immediately. Every run is unique.</p>
             <a class="menu-btn" href="generator.php"><span class="btn-icon">⚄</span> GENERATE</a>
         </section>
+
+        <section class="play-card panel">
+            <h2>MY LEVELS</h2>
+            <p>Play, edit, export or delete the levels you created in the editor or generated randomly.</p>
+            <a class="menu-btn" href="my_levels.php"><span class="btn-icon">☰</span> MY LEVELS</a>
+        </section>
     </div>
 
     <nav class="play-back">

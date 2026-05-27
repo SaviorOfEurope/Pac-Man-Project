@@ -1,21 +1,42 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/db.php';
 requireLogin();
+
+$pdo    = getDB();
+$userId = currentUserId();
+
+// ── Load existing level for editing (?id=N) ──────────────────────────────────
+$editLevel = null;
+if (!empty($_GET['id'])) {
+    $editId = (int)$_GET['id'];
+    $stmt   = $pdo->prepare('
+        SELECT id, name, map FROM niveau WHERE id = ? AND auteur_id = ?
+    ');
+    $stmt->execute([$editId, $userId]);
+    $editLevel = $stmt->fetch() ?: null;
+}
+
+$pageTitle = $editLevel
+    ? 'Editing: ' . ($editLevel['name'] ?? 'Level')
+    : 'Level Editor';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Level Editor — Les fantômes d'Ombrequatre</title>
-<link rel="stylesheet" href="css/style.css?v=2">
+<title><?= e($pageTitle) ?> — Les fantômes d'Ombrequatre</title>
+<link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body class="editor-body">
 <div class="vignette"></div>
 
 <header class="page-topbar">
-    <h1 class="page-title">LEVEL EDITOR</h1>
-    <a href="menu.php" class="nav-btn">MENU</a>
+    <h1 class="page-title"><?= $editLevel ? 'EDITING LEVEL' : 'LEVEL EDITOR' ?></h1>
+    <a href="<?= $editLevel ? 'my_levels.php' : 'menu.php' ?>" class="nav-btn">
+        <?= $editLevel ? '← MY LEVELS' : 'MENU' ?>
+    </a>
 </header>
 
 <main class="editor-layout">
@@ -76,6 +97,14 @@ requireLogin();
         <button type="button" class="menu-btn" id="playSkipBtn" disabled>PLAY (after validation)</button>
         <div id="validationResult" class="validation-result"></div>
 
+        <h2>MY LEVELS</h2>
+        <p class="editor-hint">Save this level to your personal collection.</p>
+        <button type="button" class="menu-btn primary" id="saveLevelBtn" disabled>
+            <?= $editLevel ? 'UPDATE MY LEVEL' : 'SAVE TO MY LEVELS' ?>
+        </button>
+        <a class="menu-btn" href="my_levels.php">VIEW MY LEVELS →</a>
+        <div id="saveResult" class="validation-result"></div>
+
         <h2>COMMUNITY</h2>
         <p class="editor-hint">Submit this level so other players can try it in the campaign.</p>
         <button type="button" class="menu-btn" id="submitLevelBtn" disabled>SUBMIT TO CAMPAIGN</button>
@@ -88,10 +117,19 @@ requireLogin();
 <script>
 window.USER_ID    = <?= (int)currentUserId() ?>;
 window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;
+<?php if ($editLevel): ?>
+window.EDIT_LEVEL = <?= json_encode([
+    'id'   => $editLevel['id'],
+    'name' => $editLevel['name'] ?? '',
+    'map'  => $editLevel['map'],
+]) ?>;
+<?php else: ?>
+window.EDIT_LEVEL = null;
+<?php endif; ?>
 </script>
-<script src="js/level-utils.js?v=2"></script>
-<script src="js/game.js?v=2"></script>
-<script src="js/solver-bridge.js?v=2"></script>
-<script src="js/editor.js?v=2"></script>
+<script src="js/level-utils.js?v=3"></script>
+<script src="js/game.js?v=3"></script>
+<script src="js/solver-bridge.js?v=3"></script>
+<script src="js/editor.js?v=3"></script>
 </body>
 </html>

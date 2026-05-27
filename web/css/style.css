@@ -1934,10 +1934,9 @@ button, .btn { font-family: 'Press Start 2P', monospace; }
 }
 
 .generator-actions {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
-    max-width: 360px;
     margin-bottom: 20px;
 }
 /* ── Generator level preview (canvas) ── */
@@ -2147,4 +2146,142 @@ button, .btn { font-family: 'Press Start 2P', monospace; }
     display: flex;
     justify-content: center;
     margin-top: 8px;
+}
+
+/* =====================================================
+   MY LEVELS page
+   ===================================================== */
+
+.mylevels-body { /* inherits global body */ }
+
+.mylevels-main {
+    position: relative;
+    z-index: 2;
+    max-width: 1140px;
+    margin: 0 auto 60px;
+    padding: 0 24px;
+}
+
+/* Quick-create bar */
+.mylevels-quickbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.mylevels-count {
+    margin-left: auto;
+    font-size: 9px;
+    color: var(--paper-dim);
+    letter-spacing: 0.06em;
+}
+.mylevels-limit { color: var(--red); }
+
+/* Empty state */
+.mylevels-empty {
+    text-align: center;
+    padding: 60px 30px;
+    max-width: 460px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: var(--paper-dim);
+    line-height: 2;
+}
+.mylevels-empty a { color: var(--gold); }
+.mylevels-empty-inline {
+    text-align: center;
+    padding: 30px;
+    color: var(--paper-dim);
+    font-size: 11px;
+    grid-column: 1 / -1;
+}
+.mylevels-empty-inline a { color: var(--gold); }
+
+/* Cards grid */
+.mylevels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 20px;
+}
+
+/* Individual level card */
+.my-level-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 16px 14px;
+    transition: transform 0.15s, opacity 0.3s;
+}
+.my-level-card.mlc-removing {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.mlc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+.mlc-name {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    margin: 0;
+    word-break: break-word;
+    flex: 1;
+    line-height: 1.5;
+}
+.mlc-badge {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 3px 6px;
+    border: 1px solid;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+}
+.mlc-badge.public { border-color: var(--green); color: var(--green); }
+.mlc-badge.draft  { border-color: var(--stone-light); color: var(--paper-dim); }
+
+.mlc-date {
+    font-size: 8px;
+    color: var(--paper-dim);
+    opacity: 0.65;
+    display: block;
+}
+
+.mlc-stats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    font-size: 9px;
+    color: var(--paper-dim);
+}
+.mlc-safe { color: var(--green); }
+
+/* 2×2 action buttons */
+.mlc-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 6px;
+}
+.mlc-btn {
+    font-size: 9px !important;
+    padding: 9px 4px !important;
+    margin: 0 !important;
+    text-align: center;
+}
+.mlc-delete {
+    border-color: #882222;
+}
+.mlc-delete:hover {
+    color: var(--red);
+    border-color: var(--red);
 }
