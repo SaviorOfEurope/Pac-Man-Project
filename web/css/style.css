@@ -1940,76 +1940,33 @@ button, .btn { font-family: 'Press Start 2P', monospace; }
     max-width: 360px;
     margin-bottom: 20px;
 }
-/* ── Generator level preview grid ── */
-@keyframes gem-glow {
-    0%, 100% { text-shadow: 0 0 4px var(--gold), 0 0 10px rgba(224,185,90,0.3); }
-    50%       { text-shadow: 0 0 10px var(--gold), 0 0 22px rgba(224,185,90,0.75); }
-}
+/* ── Generator level preview (canvas) ── */
 @keyframes preview-appear {
-    from { opacity: 0; transform: scale(0.94) translateY(6px); }
+    from { opacity: 0; transform: scale(0.93) translateY(8px); }
     to   { opacity: 1; transform: scale(1)    translateY(0); }
 }
 .gen-preview {
     margin-top: 22px;
     display: flex;
     justify-content: center;
+    overflow-x: auto;
 }
 .gen-grid-wrap {
     display: inline-block;
+    flex-shrink: 0;
     padding: 5px;
-    background: #000;
+    background: #001440;
     border: 3px solid var(--gold-dark);
     box-shadow:
         0 0 0 1px #000,
-        0 0 0 4px rgba(139,96,63,0.35),
-        0 10px 36px rgba(0,0,0,0.85);
-    animation: preview-appear 0.38s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        0 0 0 5px rgba(139,96,63,0.4),
+        0 12px 40px rgba(0,0,0,0.9);
+    animation: preview-appear 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.gen-grid {
-    display: grid;
-    gap: 1px;
-    background: #000;
-}
-.gc {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    line-height: 1;
-}
-.gc-wall {
-    background: linear-gradient(145deg, #5c6e82 0%, #3d4f5e 50%, #2a3a48 100%);
-    box-shadow: inset -1px -1px 0 #1a2a38, inset 1px 1px 0 rgba(255,255,255,0.10);
-}
-.gc-floor {
-    background: #060f22;
-}
-.gc-gem {
-    color: var(--gold);
-    font-size: 11px;
-    animation: gem-glow 2.2s ease-in-out infinite;
-}
-.gc-knight {
-    color: var(--gold);
-    font-size: 14px;
-    background: #0b1a30;
-    text-shadow: 0 0 8px var(--gold);
-}
-.gc-ghost {
-    font-size: 10px;
-    font-family: 'Press Start 2P', monospace;
-    background: #05060f;
-}
-.gc-ghost-red    { color: #ff4444; text-shadow: 0 0 6px rgba(255,68,68,0.9); }
-.gc-ghost-green  { color: #44ff88; text-shadow: 0 0 6px rgba(68,255,136,0.9); }
-.gc-ghost-yellow { color: #ffee44; text-shadow: 0 0 6px rgba(255,238,68,0.9); }
-.gc-ghost-blue   { color: #44aaff; text-shadow: 0 0 6px rgba(68,170,255,0.9); }
-.gc-portal {
-    color: var(--cyan);
-    font-size: 11px;
-    text-shadow: 0 0 6px var(--cyan);
+.gen-canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
 /* Solver loading parade (knight follows ghosts L→R) */

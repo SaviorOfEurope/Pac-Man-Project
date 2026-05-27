@@ -275,56 +275,127 @@ function tryBuildLevel(diff) {
     return { text, gemCount: placed, ghosts: Object.keys(meta.ghosts).length };
 }
 
-// ── Preview ──────────────────────────────────────────────────────────────────
+// ── Preview (canvas — same render logic as game.js) ──────────────────────────
 
-const GHOST_LABELS = { red: 'R', green: 'G', yellow: 'Y', blue: 'B' };
+const PREVIEW_CELL = 36; // px per tile  (game uses 40; we scale to 36 for fit)
+
+const GHOST_SPRITE = {
+    red:    'img/fantomeRougeImmobile.png',
+    green:  'img/fantomeVertImmobile.png',
+    yellow: 'img/fantomeJauneImmobile.png',
+    blue:   'img/fantomeBleuImmobile.png',
+};
+
+/** Mirrors game._drawWall / game._drawTile onto a preview canvas. */
+function _drawPreviewTile(ctx, g, r, c, rows, cols) {
+    const S  = PREVIEW_CELL;
+    const BD = Math.max(2, Math.round(S / 14)); // border depth ≈ 2-3 px
+    const x  = c * S, y = r * S;
+    const ch = g[r][c];
+
+    if (ch === '#') {
+        // Wall — matches game._drawWall
+        ctx.fillStyle = '#27446B';
+        ctx.fillRect(x, y, S, S);
+        ctx.fillStyle = '#3a5f8c';          // highlight top
+        ctx.fillRect(x, y, S, BD);
+        ctx.fillRect(x, y, BD, S);          // highlight left
+        ctx.fillStyle = '#162c4a';           // shadow bottom
+        ctx.fillRect(x, y + S - BD, S, BD);
+        ctx.fillRect(x + S - BD, y, BD, S); // shadow right
+        // Gold seam where wall meets a walkable neighbour
+        ctx.fillStyle = '#E0B95A';
+        if (r > 0      && g[r - 1][c] !== '#') ctx.fillRect(x,         y,         S, 2);
+        if (r < rows-1 && g[r + 1][c] !== '#') ctx.fillRect(x,         y + S - 2, S, 2);
+        if (c > 0      && g[r][c - 1] !== '#') ctx.fillRect(x,         y,         2, S);
+        if (c < cols-1 && g[r][c + 1] !== '#') ctx.fillRect(x + S - 2, y,         2, S);
+        return;
+    }
+
+    // Floor base — matches game._drawTile
+    ctx.fillStyle = '#0a1a3a';
+    ctx.fillRect(x, y, S, S);
+    ctx.fillStyle = 'rgba(39,68,107,0.35)';
+    ctx.fillRect(x + 1, y + 1, S - 2, S - 2);
+
+    const cx = x + S / 2, cy = y + S / 2;
+
+    if (ch === '.') {
+        // Coin / gem — matches game._drawCoin (static, no time-based wobble)
+        const gw = Math.round(S * 0.20);
+        const gh = Math.round(S * 0.38);
+        ctx.shadowColor = 'rgba(224,185,90,0.65)';
+        ctx.shadowBlur  = 6;
+        ctx.fillStyle = '#8B603F';
+        ctx.fillRect(cx - gw,     cy - gh / 2 - 1, gw * 2,     gh + 2);
+        ctx.fillStyle = '#E0B95A';
+        ctx.fillRect(cx - gw + 1, cy - gh / 2,     gw * 2 - 2, gh);
+        ctx.shadowBlur  = 0;
+        ctx.fillStyle = '#8B603F';
+        ctx.fillRect(cx - 1,      cy - gh / 2 + 2, 2,           gh - 4);
+        ctx.fillStyle = '#fff3c4';
+        ctx.fillRect(cx - gw + 2, cy - gh / 2 + 1, 2,           2);
+
+    } else if (ch === '*') {
+        // Portal — matches game._drawPortal (static)
+        const rad = S * 0.30;
+        const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, rad);
+        grad.addColorStop(0,   'rgba(91,61,145,0.85)');
+        grad.addColorStop(0.6, 'rgba(91,61,145,0.25)');
+        grad.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowColor = 'rgba(102,230,255,0.9)';
+        ctx.shadowBlur  = 8;
+        ctx.strokeStyle = '#66E6FF';
+        ctx.lineWidth   = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, S * 0.22, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
+}
 
 function renderPreview(text) {
     const el = document.getElementById('genPreview');
     const { meta: m, grid: g } = parseLevelText(text);
-    const h = g.length;
-    const w = g[0].length;
+    const rows = g.length;
+    const cols = g[0].length;
+    const S    = PREVIEW_CELL;
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = cols * S;
+    canvas.height = rows * S;
+    canvas.className = 'gen-canvas';
+
+    const ctx = canvas.getContext('2d');
+
+    // Background (same as game: #001440)
+    ctx.fillStyle = '#001440';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Pass 1 — draw all tiles (synchronous)
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+            _drawPreviewTile(ctx, g, r, c, rows, cols);
+
+    // Pass 2 — overlay sprites (async, drawn when images load)
+    const pad = Math.round(S * 0.05);
+    function blitSprite(src, col, row) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, col * S + pad, row * S + pad, S - pad * 2, S - pad * 2);
+        img.src = src;
+    }
+    if (m.start) blitSprite('img/chevalier1.png', m.start.col, m.start.row);
+    for (const [color, pos] of Object.entries(m.ghosts || {})) {
+        if (GHOST_SPRITE[color]) blitSprite(GHOST_SPRITE[color], pos.col, pos.row);
+    }
 
     const wrap = document.createElement('div');
     wrap.className = 'gen-grid-wrap';
-
-    const gridEl = document.createElement('div');
-    gridEl.className = 'gen-grid';
-    gridEl.style.gridTemplateColumns = `repeat(${w}, 20px)`;
-
-    for (let r = 0; r < h; r++) {
-        for (let c = 0; c < w; c++) {
-            const ch = g[r][c];
-            const cell = document.createElement('div');
-            cell.className = 'gc';
-
-            const isKnight = m.start && m.start.row === r && m.start.col === c;
-            const ghostEntry = Object.entries(m.ghosts || {}).find(([, p]) => p.row === r && p.col === c);
-
-            if (ch === '#') {
-                cell.classList.add('gc-wall');
-            } else if (isKnight) {
-                cell.classList.add('gc-floor', 'gc-knight');
-                cell.textContent = '♞'; // ♞
-            } else if (ghostEntry) {
-                const [color] = ghostEntry;
-                cell.classList.add('gc-floor', 'gc-ghost', 'gc-ghost-' + color);
-                cell.textContent = GHOST_LABELS[color] || '?';
-            } else if (ch === '.') {
-                cell.classList.add('gc-floor', 'gc-gem');
-                cell.textContent = '★'; // ★
-            } else if (ch === '*') {
-                cell.classList.add('gc-floor', 'gc-portal');
-                cell.textContent = '◎'; // ◎
-            } else {
-                cell.classList.add('gc-floor');
-            }
-
-            gridEl.appendChild(cell);
-        }
-    }
-
-    wrap.appendChild(gridEl);
+    wrap.appendChild(canvas);
     el.innerHTML = '';
     el.appendChild(wrap);
 }

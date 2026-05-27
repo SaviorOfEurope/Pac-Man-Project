@@ -8,7 +8,7 @@ requireLogin();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Random Mazes — Les fantômes d'Ombrequatre</title>
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body class="generator-body">
 <div class="vignette"></div>
@@ -43,9 +43,9 @@ requireLogin();
 
 <div id="solverOverlay" class="solver-overlay" hidden></div>
 
-<script src="js/level-utils.js?v=4"></script>
-<script src="js/game.js?v=4"></script>
-<script src="js/solver-bridge.js?v=4"></script>
-<script src="js/generator.js?v=4"></script>
+<script src="js/level-utils.js?v=5"></script>
+<script src="js/game.js?v=5"></script>
+<script src="js/solver-bridge.js?v=5"></script>
+<script src="js/generator.js?v=5"></script>
 </body>
 </html>
