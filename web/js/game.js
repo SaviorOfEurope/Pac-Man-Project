@@ -382,7 +382,10 @@ class Game {
             for (const e of ends) {
                 if (e.g.state === 'defeated') continue;
                 if (e.visible === false) continue;
-                if (!e.g.visible) continue;
+                // NOTE: do NOT check e.g.visible here — for the blue ghost on a
+                // teleport turn the ghost is currently invisible (e.g.visible=false)
+                // but WILL be visible at its destination (e.visible=true).
+                // e.visible===false (checked above) already handles the invisible case.
                 if (e.r === r && e.c === c) return { idx: i, ghost: e.g };
             }
         }
@@ -409,6 +412,17 @@ class Game {
             this._slidePath    = path;
             this._slideStepIdx = 1;
             this._slideHitIdx  = hit ? hit.idx : -1;
+
+            // SWAP BUG FIX: if the ghost ends at path[0] (the player's START cell),
+            // _slideStepIdx starts at 1 and can never equal 0, so the check in
+            // _unifiedSlideStep would never fire. Handle it immediately here.
+            // Game rule: knight's slide path includes the start cell, so a ghost
+            // arriving there counts as a collision.
+            if (this._slideHitIdx === 0) {
+                this._clearTurnSlide();
+                this._loseLife();
+                return;
+            }
         }
 
         const hasGhostMotion = anims.some(a =>
@@ -522,13 +536,36 @@ class Game {
         }
         this.pendingChronos = null;
         if (victoryMidSlide || this.gems >= this.totalGems) { this._win(); return; }
+
+        // SAFETY NET: after all animation ticks, verify no ghost landed on the
+        // player's final cell. Catches any collision that was missed mid-slide
+        // (e.g. timing edge-cases, very short paths, ghost-on-destination).
+        const dangerGhost = this.ghosts.find(g =>
+            g.visible && g.state !== 'defeated' &&
+            g.row === this.player.row && g.col === this.player.col
+        );
+        if (dangerGhost) {
+            if (dangerGhost.state === 'frightened') {
+                dangerGhost.state     = 'defeated';
+                dangerGhost.visible   = false;
+                dangerGhost.respawnIn = GHOST_RESPAWN_TURNS;
+                dangerGhost.fadeFrame = 0;
+                dangerGhost.isSliding = false;
+                this.score += SCORE.GHOST;
+                // fall through to WAITING — player survives
+            } else {
+                this._loseLife();
+                return;
+            }
+        }
+
         if (done) { done(); return; }
         this.state = STATE.WAITING;
     }
 
     _handleCollisionAt(r, c) {
         const end = this._turnGhostEnds?.find(e =>
-            e.g.visible && e.g.state !== 'defeated' && e.r === r && e.c === c
+            e.visible !== false && e.g.state !== 'defeated' && e.r === r && e.c === c
         );
         const ghost = end?.g ?? this.ghosts.find(g =>
             g.visible && g.state !== 'defeated' && g.row === r && g.col === c

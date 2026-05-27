@@ -128,7 +128,7 @@ window.EDIT_LEVEL = null;
 <?php endif; ?>
 </script>
 <script src="js/level-utils.js?v=3"></script>
-<script src="js/game.js?v=3"></script>
+<script src="js/game.js?v=5"></script>
 <script src="js/solver-bridge.js?v=3"></script>
 <script src="js/editor.js?v=3"></script>
 </body>

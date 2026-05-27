@@ -49,7 +49,7 @@ requireLogin();
 window.CSRF_TOKEN = <?= json_encode(\csrfToken()) ?>;
 </script>
 <script src="js/level-utils.js?v=6"></script>
-<script src="js/game.js?v=6"></script>
+<script src="js/game.js?v=8"></script>
 <script src="js/solver-bridge.js?v=6"></script>
 <script src="js/generator.js?v=6"></script>
 </body>
