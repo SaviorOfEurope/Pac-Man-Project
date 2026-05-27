@@ -67,7 +67,7 @@ const GHOSTS = {
         img: 'img/fantomeRougeCornes.png',
         tale: 'Born of human wrath, the Scarlet Shadow has studied us for centuries. She leaves nothing to chance. To find a human in any labyrinth, she follows the wall on her right, like the oldest mortal trick.',
         desc: 'Slides on the ice like the knight. Tries RIGHT first; if blocked, clockwise: Right → Down → Left → Up. Cannot reverse her last direction. The most predictable warden — but never stops hunting.',
-        threat: 80,
+        threat: 75,
     },
     green: {
         name: 'SPECTRE TOXIQUE',
@@ -75,7 +75,7 @@ const GHOSTS = {
         img: 'img/fantomeVertCornes.png',
         tale: 'Where Scarlet thinks like a human, Toxique thinks the opposite — to surprise her prey from where it is least expected. Wreathed in plague-green flames, she walks the ceilings of memory.',
         desc: 'Slides on the ice. Tries UP first; if blocked, counter-clockwise: Up → Left → Down → Right. The mirror of Scarlet — equally relentless, opposite priorities.',
-        threat: 80,
+        threat: 75,
     },
     blue: {
         name: 'ESPRIT ABYSSAL',
@@ -83,7 +83,7 @@ const GHOSTS = {
         img: 'img/fantomeBleuCornes.png',
         tale: 'From the Void where water is lava and trees do not exist, the Abyssal has tamed a world without rules. He uses 4 portals known only to him. You will never meet him in a corridor — but he is always one tile from your fate.',
         desc: 'On odd turns, vanishes from sight. On even turns, reappears at the NEXT portal in the cycle. The knight cannot use these portals — only the Abyssal. Beware long slides between two portals.',
-        threat: 60,
+        threat: 50,
     },
     yellow: {
         name: 'ÂME CORROMPUE',
@@ -91,7 +91,7 @@ const GHOSTS = {
         img: 'img/fantomeJauneCornes.png',
         tale: 'The strongest of all wardens, yet the least feared. Corrupted Soul is terrified of humans. She reads the direction of every knight\'s last stride and flees the opposite way. When cornered, she curls up and stops, hoping not to be seen.',
         desc: 'Slides in the OPPOSITE direction of the knight\'s last heading. If blocked or would reverse herself, she stops and curls up — completely still for the turn.',
-        threat: 45,
+        threat: 100,
     },
 };
 
