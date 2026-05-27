@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Manual level designer — walls, size, ghosts, gems, import/export, solver check.
  */
 (() => {
@@ -158,9 +158,11 @@ function shuffle(arr) {
     }
 }
 
+const CELL_TYPE = { '#': 'wall', '_': 'floor', '.': 'gem', 'o': 'potion', 'c': 'watch', '*': 'portal' };
+
 function cellClass(r, c) {
     const ch = grid[r][c];
-    const cls = ['cell', `t-${ch === '_' ? 'floor' : ch}`];
+    const cls = ['cell', `t-${CELL_TYPE[ch] || 'floor'}`];
     if (meta.start && meta.start.row === r && meta.start.col === c) cls.push('has-knight');
     for (const [color, pos] of Object.entries(meta.ghosts)) {
         if (pos.row === r && pos.col === c) cls.push(`has-ghost-${color}`);
@@ -347,17 +349,17 @@ function exportLevel() {
     if (name === null) return;
     const payload = {
         version: 1,
-        name: name || ‘my-level’,
+        name: name || 'my-level',
         map: text,
         exportedAt: new Date().toISOString(),
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: ‘application/json’ });
-    const a = document.createElement(‘a’);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = (name || ‘my-level’).replace(/[^\w\-]+/g, ‘_’) + ‘.ombrequatre.json’;
+    a.download = (name || 'my-level').replace(/[^\w\-]+/g, '_') + '.ombrequatre.json';
     a.click();
     URL.revokeObjectURL(a.href);
-    setStatus(‘File exported (.json). Share it with other players.’);
+    setStatus('File exported (.json). Share it with other players.');
 }
 
 function importLevel() {

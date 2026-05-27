@@ -15,6 +15,10 @@ ini_set('display_errors', '0');
 ob_start();          // buffer everything — only clean JSON goes to the client
 header('Content-Type: application/json');
 
+define('DR',  [-1, 1, 0, 0]);   // direction deltas: U D L R
+define('DC',  [0,  0, -1, 1]);
+define('OPP', [1,  0,  3,  2]); // opposite of each direction
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     http_response_code(405);
     echo json_encode(['found' => false, 'moves' => [], 'reason' => 'method_not_allowed']);
@@ -195,10 +199,6 @@ function has_ghosts(array $lvl): bool
 }
 
 // ── Slide mechanics ───────────────────────────────────────────────────────────
-
-const DR = [-1, 1, 0, 0];  // U D L R
-const DC = [0,  0, -1, 1];
-const OPP = [1, 0, 3, 2];
 
 function is_walkable(array $lvl, int $r, int $c): bool
 {

@@ -8,7 +8,7 @@ requireLogin();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Level Editor — Les fantômes d'Ombrequatre</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body class="editor-body">
 <div class="vignette"></div>
@@ -89,9 +89,9 @@ requireLogin();
 window.USER_ID    = <?= (int)currentUserId() ?>;
 window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;
 </script>
-<script src="js/level-utils.js"></script>
+<script src="js/level-utils.js?v=2"></script>
 <script src="js/game.js?v=2"></script>
-<script src="js/solver-bridge.js"></script>
-<script src="js/editor.js"></script>
+<script src="js/solver-bridge.js?v=2"></script>
+<script src="js/editor.js?v=2"></script>
 </body>
 </html>

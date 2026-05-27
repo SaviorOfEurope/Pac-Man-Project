@@ -8,7 +8,7 @@ requireLogin();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Random Mazes — Les fantômes d'Ombrequatre</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body class="generator-body">
 <div class="vignette"></div>
@@ -20,11 +20,17 @@ requireLogin();
 
 <main class="generator-main panel">
     <section class="generator-intro">
-        <h2>MEDIUM DIFFICULTY</h2>
-        <p>Automatically generated rooms comparable to campaign levels <strong>5–6</strong>:
-           icy corridors, <strong>18–26 gems</strong>, <strong>1 to 2 ghosts</strong> (red / green),
-           verified by the solver in under <strong>15 seconds</strong>.</p>
+        <h2>RANDOM LEVEL</h2>
+        <p>Choose a difficulty — the solver checks every generated level
+           in under <strong>15 seconds</strong> before you can play.</p>
     </section>
+
+    <div class="diff-selector">
+        <button type="button" class="menu-btn diff-btn" data-diff="easy">EASY</button>
+        <button type="button" class="menu-btn diff-btn active" data-diff="medium">MEDIUM</button>
+        <button type="button" class="menu-btn diff-btn" data-diff="hard">HARD</button>
+    </div>
+    <p id="diffDesc" class="editor-hint center"></p>
 
     <div class="generator-actions">
         <button type="button" class="menu-btn primary" id="generateBtn">GENERATE A MAZE</button>
@@ -37,9 +43,9 @@ requireLogin();
 
 <div id="solverOverlay" class="solver-overlay" hidden></div>
 
-<script src="js/level-utils.js"></script>
-<script src="js/game.js?v=2"></script>
-<script src="js/solver-bridge.js"></script>
-<script src="js/generator.js"></script>
+<script src="js/level-utils.js?v=4"></script>
+<script src="js/game.js?v=4"></script>
+<script src="js/solver-bridge.js?v=4"></script>
+<script src="js/generator.js?v=4"></script>
 </body>
 </html>

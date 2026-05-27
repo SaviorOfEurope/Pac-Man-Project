@@ -1,8 +1,4 @@
 <?php
-/**
- * Database connection settings.
- * Adjust to your environment (XAMPP/WAMP/Junia server, etc.).
- */
 
 return [
     'host'     => 'localhost',
