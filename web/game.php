@@ -126,6 +126,6 @@ window.LEVEL_DATA = <?= $levelDataJson ?>;
 window.USER_ID    = <?= (int)currentUserId() ?>;
 window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;
 </script>
-<script src="js/game.js?v=4"></script>
+<script src="js/game.js?v=5"></script>
 </body>
 </html>

@@ -376,8 +376,8 @@ class Game {
         return { row: g.row, col: g.col, visible: false };
     }
 
-    _findFirstCollisionOnEnds(path, ends) {
-        for (let i = 0; i < path.length; i++) {
+    _findFirstCollisionOnEnds(path, ends, startIdx = 0) {
+        for (let i = startIdx; i < path.length; i++) {
             const [r, c] = path[i];
             for (const e of ends) {
                 if (e.g.state === 'defeated') continue;
@@ -416,12 +416,28 @@ class Game {
             // SWAP BUG FIX: if the ghost ends at path[0] (the player's START cell),
             // _slideStepIdx starts at 1 and can never equal 0, so the check in
             // _unifiedSlideStep would never fire. Handle it immediately here.
-            // Game rule: knight's slide path includes the start cell, so a ghost
-            // arriving there counts as a collision.
             if (this._slideHitIdx === 0) {
-                this._clearTurnSlide();
-                this._loseLife();
-                return;
+                // Only a true collision if the ghost STARTED in the player's forward
+                // direction (head-on swap). A ghost approaching from a perpendicular
+                // direction ends up at path[0] AFTER the player has already moved —
+                // that is a false positive and must not kill the player.
+                const g0 = hit.ghost;
+                const { dr, dc } = DELTA[dir];
+                const trueSwap =
+                    (dc < 0 && g0.row === path[0][0] && g0.col < path[0][1]) ||  // L: ghost was left
+                    (dc > 0 && g0.row === path[0][0] && g0.col > path[0][1]) ||  // R: ghost was right
+                    (dr < 0 && g0.col === path[0][1] && g0.row < path[0][0]) ||  // U: ghost was above
+                    (dr > 0 && g0.col === path[0][1] && g0.row > path[0][0]);    // D: ghost was below
+
+                if (trueSwap) {
+                    this._clearTurnSlide();
+                    this._loseLife();
+                    return;
+                }
+                // False positive: perpendicular ghost slides into our start cell
+                // after we have left. Recalculate collision from path[1] onward.
+                const laterHit = this._findFirstCollisionOnEnds(path, ends, 1);
+                this._slideHitIdx = laterHit ? laterHit.idx : -1;
             }
         }
 
