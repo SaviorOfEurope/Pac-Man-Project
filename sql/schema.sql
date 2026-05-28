@@ -3,14 +3,8 @@
 -- Group: 4doigtsdelamain (CIR1 2025-2026)
 -- =========================================================
 --
--- NOTE: This schema follows the architecture provided by the team,
--- with ONE security change: mot_de_passe is VARCHAR(255) instead of
--- VARCHAR(30), because PHP password_hash() with bcrypt produces a
--- 60-character hash that wouldn't fit in 30 chars. Storing truncated
--- hashes breaks authentication.
---
--- The table name "utisateur" (instead of "utilisateur") matches the
--- original schema. Rename consistently if you want to fix the typo.
+-- mot_de_passe est VARCHAR(255) (pas 30) car bcrypt produit 60 chars.
+-- "utisateur" (typo) conservé pour correspondre au schéma original.
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS `basegrp5_4doigtsdelamain`
@@ -29,14 +23,16 @@ DROP TABLE IF EXISTS `niveau`;
 -- Stores level definitions (map data, difficulty, max score)
 -- ---------------------------------------------------------
 CREATE TABLE `niveau` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `difficulte` INT(11) NOT NULL DEFAULT 1,
-  `score_max` INT(11) NOT NULL DEFAULT 0,
-  `map` TEXT NOT NULL,
-  `solution_cache` TEXT NULL,          -- pre-computed optimal solution (string of U/D/L/R)
-  `solution_safe` TINYINT(1) NOT NULL DEFAULT 0,  -- 1 if solution avoids all 4 ghosts; 0 = gems-only
-  `auteur_id` INT(11) NULL DEFAULT NULL,           -- user who submitted this level (NULL = built-in)
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id`             INT(11)      NOT NULL AUTO_INCREMENT,
+  `difficulte`     INT(11)      NOT NULL DEFAULT 1,
+  `score_max`      INT(11)      NOT NULL DEFAULT 0,
+  `map`            TEXT         NOT NULL,
+  `solution_cache` TEXT         NULL,                    -- solution optimale pré-calculée (U/D/L/R)
+  `solution_safe`  TINYINT(1)   NOT NULL DEFAULT 0,      -- 1 = évite les fantômes ; 0 = gems-only
+  `name`           VARCHAR(100) NULL DEFAULT NULL,        -- nom donné par l'utilisateur (NULL = niveau officiel)
+  `is_public`      TINYINT(1)   NOT NULL DEFAULT 1,      -- 0 = brouillon perso ; 1 = publié dans la campagne
+  `auteur_id`      INT(11)      NULL DEFAULT NULL,        -- auteur (NULL = niveau officiel intégré)
+  `created_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_auteur` (`auteur_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -71,29 +67,10 @@ CREATE TABLE `in_game` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
--- Sample data: 3 levels of increasing difficulty
+-- Données : 10 niveaux de la campagne officielle
 -- =========================================================
---
--- MAP FORMAT (text):
---   First lines are metadata (W, H, P, R, G, Y, B), then "MAP"
---   followed by the grid.
---
---   W <width>           grid width
---   H <height>          grid height
---   P <row> <col>       knight (player) start
---   R <row> <col>       Ombre ecarlate (red ghost) start
---   G <row> <col>       Spectre toxique (green ghost) start
---   Y <row> <col>       Ame corrompue (yellow ghost) start
---   B <row> <col>       Esprit abyssal (blue ghost) start
---   MAP                 marker, then the grid follows
---
--- Grid characters:
---   #  wall
---   .  path with gem (coin)
---   o  path with strength potion (combat mode)
---   c  path with chronos watch (50/50 freeze ghosts or knight)
---   *  portal (used by Esprit abyssal for teleports)
---   _  empty path (no item)
+-- Format MAP :  W H P R G Y B  puis "MAP" puis la grille.
+--   #  mur   .  gemme   o  potion   c  montre   *  portail   _  sol vide
 -- =========================================================
 
 INSERT INTO `niveau` (`id`, `difficulte`, `score_max`, `map`, `solution_cache`, `solution_safe`) VALUES
@@ -278,9 +255,6 @@ MAP
 #*___________*#
 ###############',
 'UULLLLURDLDRDDLLDRRDRURRULLLLUUUUUURRRDLDDR', 0);
-
-
-
 
 -- =========================================================
 -- Optional: a demo user (password is "demo1234")
