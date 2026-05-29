@@ -44,8 +44,8 @@ if ($levelId <= 0) {
 $pdo    = getDB();
 $userId = currentUserId();
 
-// On vérifie que le niveau existe et on récupère son score maximum (anti-triche côté serveur)
-$stmt = $pdo->prepare('SELECT score_max FROM niveau WHERE id = ?');
+// On vérifie que le niveau existe, on récupère le score max et la carte (anti-triche côté serveur)
+$stmt = $pdo->prepare('SELECT score_max, map FROM niveau WHERE id = ?');
 $stmt->execute([$levelId]);
 $lvl = $stmt->fetch();
 if (!$lvl) {
@@ -53,8 +53,10 @@ if (!$lvl) {
     echo json_encode(['ok' => false, 'error' => 'Unknown level.']);
     exit;
 }
-// On plafonne le score au maximum autorisé par le niveau
-$score = min($score, (int)$lvl['score_max']);
+// On plafonne le score et les gemmes aux valeurs maximales réelles du niveau
+$score   = min($score, (int)$lvl['score_max']);
+$maxGems = substr_count($lvl['map'], '.') + substr_count($lvl['map'], 'o') + substr_count($lvl['map'], 'c');
+$gems    = min($gems, $maxGems);
 
 // On utilise une transaction pour garantir la cohérence des données
 $pdo->beginTransaction();

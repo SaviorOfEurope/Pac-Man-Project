@@ -51,7 +51,8 @@ CREATE TABLE `utisateur` (
   `mot_de_passe` VARCHAR(255) NOT NULL,  -- 255 caractères pour le hash bcrypt (qui fait 60 chars)
   `niveau_actuel` INT(11) NOT NULL DEFAULT 1,  -- Prochain niveau à débloquer (1 = aucun encore complété)
   `score_total` INT(11) NOT NULL DEFAULT 0,    -- Somme des meilleurs scores sur chaque niveau
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_score_total` (`score_total`)         -- Accélère le tri du classement global
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------
@@ -67,6 +68,7 @@ CREATE TABLE `in_game` (
   `temps_best` INT(11) NULL DEFAULT NULL,   -- Meilleur temps de complétion en secondes (NULL si jamais terminé)
   PRIMARY KEY (`id_niveau`, `id_joueur`),
   KEY `idx_joueur` (`id_joueur`),
+  KEY `idx_niveau_score` (`id_niveau`, `score_niveau`), -- Accélère la sous-requête MAX du classement par niveau
   -- Si un niveau ou un joueur est supprimé, on efface aussi ses lignes in_game
   FOREIGN KEY (`id_niveau`) REFERENCES `niveau`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`id_joueur`) REFERENCES `utisateur`(`id`) ON DELETE CASCADE

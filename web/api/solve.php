@@ -35,8 +35,7 @@ if (!is_array($req) || empty($req['level']) || !is_string($req['level'])) {
 
 $levelText     = $req['level'];
 $requireSafe   = ($req['requireSafe']   ?? true)  === true;  // Par défaut, on cherche un chemin sans fantômes
-$allowFallback = ($req['requireSafe']   ?? false) === true;  // Autoriser un chemin gemmes-only si pas de chemin sûr ?
-$allowFallback = ($req['allowFallback'] ?? false) === true;
+$allowFallback = ($req['allowFallback'] ?? false) === true;  // Autoriser un chemin gemmes-only si pas de chemin sûr ?
 
 // ── 1. Essai du binaire C compilé ──────────────────────────────────────────────
 
@@ -390,7 +389,7 @@ function precompute_ghosts(array $lvl, int $maxTurns = 120): array
                         foreach ($portals as $pi => $p) {
                             if ($p[0] === $gr && $p[1] === $gc) { $idx = $pi; break; }
                         }
-                        $next = (($idx + 1) % count($portals));
+                        $next = ($idx + 1) % count($portals);
                         $gr = $portals[$next][0]; $gc = $portals[$next][1];
                     }
                     $vis = true; // Visible après téléportation

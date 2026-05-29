@@ -16,13 +16,14 @@ function startSecureSession(): void {
         'path'     => '/',
         'httponly' => true,    // Inaccessible depuis JavaScript (protection XSS)
         'samesite' => 'Lax',   // Protection contre les attaques CSRF cross-site
+        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', // HTTPS uniquement en production
     ]);
 
     session_start();
 
     // On régénère l'identifiant de session toutes les 30 minutes
     // pour limiter les risques de fixation de session
-    if (!isset($_SESSION['_last_regen']) || (time() - $_SESSION['_last_regen']) > 1800) {
+    if (!isset($_SESSION['_last_regen']) || time() - $_SESSION['_last_regen'] > 1800) {
         session_regenerate_id(true);
         $_SESSION['_last_regen'] = time();
     }

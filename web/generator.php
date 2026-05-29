@@ -56,7 +56,7 @@ requireLogin();
 
 <script>
 // Token CSRF nécessaire pour les appels API (génération et sauvegarde)
-window.CSRF_TOKEN = <?= json_encode(\csrfToken()) ?>;
+window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;
 </script>
 <script src="js/level-utils.js"></script>
 <script src="js/game.js"></script>

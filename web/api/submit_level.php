@@ -38,29 +38,16 @@ if (strlen($map) < 20) {
     exit;
 }
 
-// Analyse de l'en-tête de la carte pour préparer le calcul du score_max
-$scoreMax = 0;
-foreach (explode("\n", $map) as $line) {
-    $parts = preg_split('/\s+/', trim($line));
-    if (count($parts) >= 2 && $parts[0] === 'W') { }
-}
-// Comptage des collectibles pour estimer le score maximum jouable
-$gemCount    = substr_count($map, '.');  // Gemmes classiques
-$potionCount = substr_count($map, 'o'); // Potions (power-up combat)
-$watchCount  = substr_count($map, 'c'); // Montres chronos (power-up temps)
-$scoreMax    = $gemCount * 10 + $potionCount * 50 + $watchCount * 30;
+require_once __DIR__ . '/../includes/level.php';
+
+$scoreMax = computeScoreMax($map);
 if ($scoreMax === 0) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Level has no collectible items.']);
     exit;
 }
 
-// La difficulté est estimée d'après le nombre de mouvements dans la solution optimale
-$difficulte = 1;
-if ($moves >= 40)      $difficulte = 5;
-elseif ($moves >= 25)  $difficulte = 4;
-elseif ($moves >= 15)  $difficulte = 3;
-elseif ($moves >= 8)   $difficulte = 2;
+$difficulte = computeDifficulte($moves);
 
 $pdo    = getDB();
 $userId = currentUserId();

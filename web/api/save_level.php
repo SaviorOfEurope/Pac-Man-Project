@@ -63,18 +63,10 @@ if (strlen($map) < 20) {
     exit;
 }
 
-// Calcul du score maximum : basé sur le type et le nombre de collectibles dans la carte
-// . = gemme (10 pts), o = potion (50 pts), c = montre (30 pts)
-$scoreMax = substr_count($map, '.') * 10
-          + substr_count($map, 'o') * 50
-          + substr_count($map, 'c') * 30;
+require_once __DIR__ . '/../includes/level.php';
 
-// Calcul de la difficulté en fonction du nombre de mouvements dans la solution optimale
-$difficulte = 1;
-if      ($moves >= 40) $difficulte = 5;
-elseif  ($moves >= 25) $difficulte = 4;
-elseif  ($moves >= 15) $difficulte = 3;
-elseif  ($moves >= 8)  $difficulte = 2;
+$scoreMax   = computeScoreMax($map);
+$difficulte = computeDifficulte($moves);
 
 $pdo    = getDB();
 $userId = currentUserId();

@@ -19,7 +19,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Analyse du contenu d'une carte pour en extraire le nombre de gemmes et de fantômes
 function parseLevelMeta(string $map): array {
-    $gems   = substr_count($map, '.'); // Chaque '.' est une gemme dans le format de carte
+    $gems   = substr_count($map, '.') + substr_count($map, 'o') + substr_count($map, 'c'); // Gemmes + potions + montres
     $ghosts = 0;
     foreach (explode("\n", $map) as $line) {
         $p = preg_split('/\s+/', trim($line));
@@ -33,7 +33,7 @@ function parseLevelMeta(string $map): array {
 // On enrichit chaque niveau avec les métadonnées extraites de la carte
 $levels = [];
 foreach ($rows as $row) {
-    $levels[] = array_merge($row, parseLevelMeta($row['map']));
+    $levels[] = [...$row, ...parseLevelMeta($row['map'])];
 }
 
 $total = count($levels);
